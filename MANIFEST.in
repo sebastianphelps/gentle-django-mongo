@@ -1,0 +1,1 @@
+recursive-include gentle_django_mongo *.py METADATA *.html
