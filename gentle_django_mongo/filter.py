@@ -1,6 +1,7 @@
 from copy import deepcopy
 import re
 
+from django.db.models.sql.constants import QUERY_TERMS
 from bson.objectid import ObjectId
 
 OPERATORS_MAP = {
@@ -26,28 +27,29 @@ OPERATORS_MAP = {
 
 class MongoFilter(object):
     select_related = False
+    query_terms = QUERY_TERMS
 
-    def __init__(self, query_terms, order_by=[]):
-        self.query_terms = query_terms
+    def __init__(self, filter_terms, order_by=[]):
+        self.filter_terms = filter_terms
         self.order_by = order_by
         self.where = None
 
     def clone(self):
-        return MongoFilter(deepcopy(self.query_terms))
+        return MongoFilter(deepcopy(self.filter_terms))
 
     def add_filters(self, extra_filters):
         for name, value in extra_filters.items():
             # If you re-filter on the same column this will replace what you filtered before
-            self.query_terms[name] = value
+            self.filter_terms[name] = value
 
     @property
     def is_empty(self):
-        return len(self.query_terms) == 0
+        return len(self.filter_terms) == 0
 
     def as_mongo_filter(self):
         # Convert this to a mongo filter
         mongo_filter = {}
-        for name, value in self.query_terms.items():
+        for name, value in self.filter_terms.items():
             fields = name.split("__")
             op = None
             if len(fields) > 1 and fields[-1] in OPERATORS_MAP.keys():

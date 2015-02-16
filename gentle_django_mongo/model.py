@@ -69,12 +69,17 @@ class MongoModel(object):
     objects = MongoManager()
     _meta = None
 
-    #id = CharField(primary_key=True)
-
-
     def __init__(self, **kwargs):
         self._id = None
         self.__dict__.update(kwargs)
+
+    @property
+    def id(self):
+        return str(self._id)
+
+    @property
+    def pk(self):
+        return str(self._id)
 
     def delete(self):
         if self._id is None:
@@ -103,7 +108,7 @@ class MongoModel(object):
             if value is None:
                 setattr(self, field.name, field.get_default())
             else:
-                setattr(self, field.name, field.to_python(value))
+                setattr(self, field.name, field.get_prep_value(value))
 
         if self._id is None:
             self._id = self.collection().insert(self._message)

@@ -6,9 +6,9 @@ from .filter import MongoFilter
 class MongoQuerySet(object):
 
     def __init__(self, model=None, cursor=None):
+        self.query = MongoFilter({})
         self.model = model
         self.cursor = cursor
-        self.query = MongoFilter({})
 
     def get_cursor(self):
         if self.cursor is None:
@@ -25,6 +25,7 @@ class MongoQuerySet(object):
         # Convert filter to mongo format
         self.query.add_filters(kwargs)
         self.cursor = self.model.collection().find(self.query.as_mongo_filter())
+        print self.query.filter_terms
         return self
 
     def get(self, **kwargs):
@@ -57,12 +58,10 @@ class MongoQuerySet(object):
         instance = self.model()
         for name, value in doc.items():
             setattr(instance, name, value)
-        if "_id" in doc:
-            instance.id = str(doc["_id"])
-            instance.pk = str(doc["_id"])
         return instance
 
     def update(self, **kwargs):
+        # Todo: handle timezone aware datetime fields
         updated_fields = {}
         for name, value in kwargs.items():
             updated_fields[".".join(name.split("__"))] = value
