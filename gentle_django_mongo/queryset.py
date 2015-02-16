@@ -25,7 +25,6 @@ class MongoQuerySet(object):
         # Convert filter to mongo format
         self.query.add_filters(kwargs)
         self.cursor = self.model.collection().find(self.query.as_mongo_filter())
-        print self.query.filter_terms
         return self
 
     def get(self, **kwargs):
