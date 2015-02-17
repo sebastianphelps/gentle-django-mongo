@@ -29,13 +29,17 @@ class MongoFilter(object):
     select_related = False
     query_terms = QUERY_TERMS
 
-    def __init__(self, filter_terms, order_by=[]):
+    def __init__(self, filter_terms, order_by=None, model=None):
         self.filter_terms = filter_terms
+        if order_by is None:
+            order_by = []
         self.order_by = order_by
         self.where = None
+        self.model = model
 
     def clone(self):
-        return MongoFilter(deepcopy(self.filter_terms))
+        return MongoFilter(deepcopy(self.filter_terms), order_by=deepcopy(self.order_by),
+                           model=self.model)
 
     def add_filters(self, extra_filters):
         for name, value in extra_filters.items():
@@ -59,14 +63,23 @@ class MongoFilter(object):
                     value = ObjectId(value)
                 elif fields[0] == ["id", "pk"] and op in ["in"]:
                     value = map(lambda x: ObjectId(x), value)
-
-                value = OPERATORS_MAP[op](value)
                 fields = fields[:-1]
 
             if fields[0] in ["id", "pk"]:
                 fields[0] = "_id"
                 if op is None:
                     value = ObjectId(value)
+            elif len(fields) == 1:
+                if isinstance(value, (list, tuple)):
+                    value = map(
+                         lambda x: self.model._meta.get_field(fields[0]).get_prep_value(x),
+                         value
+                     )
+                else:
+                    value = self.model._meta.get_field(fields[0]).get_prep_value(value)
+
+            if op:
+                value = OPERATORS_MAP[op](value)
 
             mongo_filter[".".join(fields)] = value
 

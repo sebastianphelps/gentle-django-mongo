@@ -6,9 +6,9 @@ from .filter import MongoFilter
 class MongoQuerySet(object):
 
     def __init__(self, model=None, cursor=None):
-        self.query = MongoFilter({})
         self.model = model
         self.cursor = cursor
+        self.query = MongoFilter({}, model=model)
 
     def get_cursor(self):
         if self.cursor is None:
