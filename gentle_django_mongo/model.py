@@ -3,6 +3,7 @@ import sys
 from django.db.models.base import ModelBase
 from django.db.models.options import Options
 from django.db.models import FieldDoesNotExist, Field
+from django.db.models.loading import register_models
 
 from .manager import MongoManager
 from .utils import mongo_db
@@ -50,6 +51,9 @@ class MongoModelMeta(ModelBase):
                 setattr(new_class, attr, None)
                 attr_value.name = attr
                 new_class._meta.fields.append(attr_value)
+                
+        new_class._deferred = False
+        register_models(new_class._meta.app_label, new_class)
 
         return new_class
 
