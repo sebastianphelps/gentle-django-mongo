@@ -1,0 +1,4 @@
+Django==1.4.13
+pymongo==2.7.1
+mongomock==1.2.0
+mock==1.0.1
