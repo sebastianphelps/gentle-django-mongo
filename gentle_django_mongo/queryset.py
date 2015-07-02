@@ -19,7 +19,7 @@ class MongoQuerySet(object):
         return self
 
     def next(self):
-		# Needed when mocking mongo
+        # Needed when mocking mongo
         if isinstance(self.cursor, list):
             self.cursor = iter(self.cursor)
         return self.doc_to_instance(self.cursor.next())
